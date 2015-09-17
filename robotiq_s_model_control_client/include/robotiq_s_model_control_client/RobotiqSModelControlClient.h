@@ -35,107 +35,109 @@
 #define ROBOTIQSMODELCONTROLCLIENT_H_
 #include <ros/ros.h>
 #include <robotiq_s_model_control/SModel_robot_input.h>
+#include <robotiq_s_model_control/SModel_robot_output.h>
 
 
-//  NB: in order to get the status messages from the server, SpinOnce() must be called from the main code !!!!
-
-using namespace robotiq_s_model_control;
-
-class RobotiqSModelControlClient
+namespace robotiq_s_model_control_client
 {
+	using namespace robotiq_s_model_control;
 
-public:
-
-	enum grasping_mode
+	class RobotiqSModelControlClient
 	{
-		GM_basic,
-		GM_pinch,
-		GM_wide,
-		GM_scissor
+		public:
+
+			enum grasping_mode
+			{
+				GM_basic,
+				GM_pinch,
+				GM_wide,
+				GM_scissor
+			};
+
+			ros::NodeHandle n_;
+			ros::Publisher topicPub_SModelRobotOutput_;
+			ros::Subscriber topicSub_SModelRobotInput_;
+
+			// default speed and force are set to 150
+			RobotiqSModelControlClient();
+			virtual ~RobotiqSModelControlClient();
+
+
+			// --------------------- Function calls for sending commands to the Robotiq hand ---------------------
+
+
+			// must be called first
+			void activate();
+
+			void reset();
+
+
+			// grasp using preshapes
+			void setGraspingMode(const grasping_mode &mode);
+
+
+
+			// opens the hand (fingers A-C). Only for simple control mode
+			bool open(unsigned int speed=150, unsigned int force=150);
+
+			// closes the hand (fingers A-C). Only for simple control mode
+			bool close(unsigned int speed=150, unsigned int force=150);
+
+
+			// executes the position request command for fingers A,B,C
+			// pos/speed/force should be size 1 for simple control mode
+			// otherwise they should be size 3 for advanced control mode (control individual fingers)
+			// pos/speed/force[0] --> finger A
+			// pos/speed/force[1] --> finger B
+			// pos/speed/force[2] --> finger C
+			bool gotoPos(const std::vector<unsigned int> &pos,
+					const std::vector<unsigned int> &speed,
+					const std::vector<unsigned int> &force);
+
+			// sets position for scissor axis
+			void gotoScissorPos(unsigned int pos, unsigned int speed = 150, unsigned int force = 150);
+
+
+			// --------------------- Function calls for reading status of the Robotiq hand ---------------------
+			// NB: Need to ros::SpinOnce() in the main code in order to receive the messages!!!
+
+			void topicCallback_SModelRobotInput(const SModel_robot_inputPtr &msg);
+
+			SModel_robot_input getStatusMsg();
+
+			grasping_mode getGraspingMode();
+
+			// bool Stopped();
+
+			bool inResetMode();
+
+			bool activationOngoing();
+
+			bool modeChangeOngoing();
+
+			bool activationCompleted();
+
+			bool modeChangeCompleted();
+
+			bool inMotion();
+
+			bool stoppedPartiallyBeforeRequestedPosition();
+
+			bool stoppedFullBeforeRequestedPosition();
+
+			bool stoppedAtRequestedPosition();
+
+
+
+		private:
+
+			grasping_mode m_current_grasping_mode;
+			SModel_robot_input m_status_msg;
+			bool m_received_status_msg;
+
+
 	};
 
-	ros::NodeHandle n_;
-	ros::Publisher topicPub_SModelRobotOutput_;
-	ros::Subscriber topicSub_SModelRobotInput_;
-
-	// default speed and force are set to 150
-	RobotiqSModelControlClient();
-	virtual ~RobotiqSModelControlClient();
-
-
-	// --------------------- Function calls for sending commands to the Robotiq hand ---------------------
-
-
-	// must be called first
-	void activate();
-
-	void reset();
-
-
-	// grasp using preshapes
-	void setGraspingMode(const grasping_mode &mode);
-
-
-
-	// opens the hand (fingers A-C). Only for simple control mode
-	bool open(unsigned int speed=150, unsigned int force=150);
-
-	// closes the hand (fingers A-C). Only for simple control mode
-	bool close(unsigned int speed=150, unsigned int force=150);
-
-
-	// executes the position request command for fingers A,B,C
-	// pos/speed/force should be size 1 for simple control mode
-	// otherwise they should be size 3 for advanced control mode (control individual fingers)
-	// pos/speed/force[0] --> finger A
-	// pos/speed/force[1] --> finger B
-	// pos/speed/force[2] --> finger C
-	bool gotoPos(const std::vector<unsigned int> &pos,
-			const std::vector<unsigned int> &speed,
-			const std::vector<unsigned int> &force);
-
-	// sets position for scissor axis
-	void gotoScissorPos(unsigned int pos, unsigned int speed = 150, unsigned int force = 150);
-
-
-	// --------------------- Function calls for reading status of the Robotiq hand ---------------------
-	// NB: Need to ros::SpinOnce() in the main code in order to receive the messages!!!
-
-	void topicCallback_SModelRobotInput(const SModel_robot_inputPtr &msg);
-
-	SModel_robot_input getStatusMsg();
-
-	grasping_mode getGraspingMode();
-
-	// bool Stopped();
-
-	bool inResetMode();
-
-	bool activationOngoing();
-
-	bool modeChangeOngoing();
-
-	bool activationCompleted();
-
-	bool modeChangeCompleted();
-
-	bool inMotion();
-
-	bool stoppedPartiallyBeforeRequestedPosition();
-
-	bool stoppedFullBeforeRequestedPosition();
-
-	bool stoppedAtRequestedPosition();
-
-
-
-private:
-
-	grasping_mode m_current_grasping_mode;
-	SModel_robot_input m_status_msg;
-	bool m_received_status_msg;
-
-
-};
+} /* robotiq_s_model_control_client */ 
 
 #endif

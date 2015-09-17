@@ -39,6 +39,8 @@
 
 int main(int argc, char **argv) {
 
+  using namespace robotiq_s_model_control_client;
+
 	ros::init(argc, argv, "robotiq_hand_control_client_test");
 
 	RobotiqSModelControlClient robotiq_control_client;
