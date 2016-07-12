@@ -31,6 +31,8 @@ install(TARGETS ${PROJECT_NAME} robotiq_control_client_example
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(DIRECTORY "include/" DESTINATION "include")
+
 install(PROGRAMS scripts/robotiq_control_client_example_python
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
